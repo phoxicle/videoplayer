@@ -1,11 +1,12 @@
 <template>
   <div id="app">
     <video id="video" controls>
-      <source src="/path/to/video.mp4" type="video/mp4" />
-      <track id="subtitles" src="/path/to/subtitles.vtt" kind="subtitles" srclang="en" label="English" default />
+      <!-- mp4 and vtt from https://github.com/brenopolanski/html5-video-webvtt-example -->
+      <source src="/MIB2.mp4" type="video/mp4" />
+      <track id="subtitles" src="/MIB2-subtitles-pt-BR.vtt" kind="subtitles" srclang="en" label="English" default />
     </video>
     <div id="definition" v-if="hoveredWord">
-      <strong>{{ hoveredWord }}</strong>: {{ definition }}
+      <strong>Definition: {{ hoveredWord }}</strong>: {{ definition }}
     </div>
   </div>
 </template>
