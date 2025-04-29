@@ -6,39 +6,39 @@ import java.time.format.DateTimeFormatter
 // TODO unit test with fake subtitle file text
 class SubtitleParser(private val subtitleFile: String) {
 
-    private val timeToWords: MutableMap<Int, List<String>> = mutableMapOf()
+    private val timeToWords: MutableMap<Int, Set<String>> = mutableMapOf()
 
     init {
+        // open subtitle file
         val vttFilePath = Paths.get("src/main/resources/static/$subtitleFile")
         val lines = Files.readAllLines(vttFilePath)
+
+        // subtitle timestamp format
         val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
 
-        var currentText = StringBuilder()
+        // words will be keyed by the start time
         var startTimeInSeconds: Int? = null
 
         for (line in lines) {
-            if (line.contains("-->")) {
-                if (startTimeInSeconds != null && currentText.isNotEmpty()) {
-                    logger.info("Adding words at $startTimeInSeconds: $currentText")
-                    timeToWords[startTimeInSeconds] = currentText.toString().trim().split(" ")
-                    currentText = StringBuilder()
+            when {
+                line.isBlank() -> continue // empty line
+                line.toIntOrNull() != null -> continue // row number only
+                line.contains("-->") -> { // time range
+                    // e.g. 00:00:04.100 --> 00:00:06.000
+                    val times = line.split(" --> ")
+                    startTimeInSeconds = LocalTime.parse(times[0].trim(), formatter).toSecondOfDay()
                 }
-
-                val times = line.split(" --> ")
-                startTimeInSeconds = LocalTime.parse(times[0].trim(), formatter).toSecondOfDay()
-            } else if (line.isNotBlank()) {
-                // line number only, skip
-                if (line.toIntOrNull() != null) {
-                    continue
+                else -> { // valid line
+                    if (startTimeInSeconds != null) {
+                        recordWordsAtTime(startTimeInSeconds, line)
+                    }
                 }
-                currentText.append(line).append(" ")
             }
         }
+    }
 
-        if (startTimeInSeconds != null && currentText.isNotEmpty()) {
-            logger.info("All lines done. Adding words from: $currentText")
-            timeToWords[startTimeInSeconds] = currentText.toString().trim().split(" ")
-        }
+    private fun recordWordsAtTime(startTimeInSeconds: Int, text: String) {
+        timeToWords[startTimeInSeconds] = text.toString().trim().split(" ").toSet()
     }
 
     fun getWords(startTime: Int, endTime: Int): List<String> {
