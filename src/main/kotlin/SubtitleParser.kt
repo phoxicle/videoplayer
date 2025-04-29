@@ -4,11 +4,12 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 // TODO unit test with fake subtitle file text
-class SubtitleParser(private val subtitleFile: String) {
+class SubtitleParser private constructor(private val subtitleFile: String) {
 
     private val timeToWords: MutableMap<Int, Set<String>> = mutableMapOf()
 
     init {
+        logger.info("Instantiating SubtitleParser with file: $subtitleFile")
         // open subtitle file
         val vttFilePath = Paths.get("src/main/resources/static/$subtitleFile")
         val lines = Files.readAllLines(vttFilePath)
@@ -35,6 +36,9 @@ class SubtitleParser(private val subtitleFile: String) {
                 }
             }
         }
+
+        val totalWords = timeToWords.values.sumOf { it.size }
+        logger.info("Instantiated SubtitleParser with $totalWords words")
     }
 
     private fun recordWordsAtTime(startTimeInSeconds: Int, text: String) {
@@ -50,5 +54,13 @@ class SubtitleParser(private val subtitleFile: String) {
             }
         }
         return result
+    }
+
+    companion object {
+        private val instances = mutableMapOf<String, SubtitleParser>()
+
+        fun getInstance(subtitleFile: String): SubtitleParser {
+            return instances.getOrPut(subtitleFile) { SubtitleParser(subtitleFile) }
+        }
     }
 }

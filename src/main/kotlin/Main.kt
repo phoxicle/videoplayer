@@ -36,16 +36,15 @@ fun main() {
                 }
 
                 // For now, don't require subtitle file as request param. Assume fixed name.
-                // TODO singleton per filename
-                val subtitleParser = SubtitleParser("MIB2-subtitles-pt-BR.vtt")
+                val subtitleParser = SubtitleParser.getInstance("MIB2-subtitles-pt-BR.vtt")
 
-                // TODO fix
+                // TODO move fake definition generation and similar elsewhere
                 val words = subtitleParser.getWords(startTime, endTime)
                 val fakeDefinitions = mutableListOf<WordDefinition>()
                 for (word in words) {
-                    logger.info("Word: $word")
                     fakeDefinitions.add(WordDefinition(word, "Definition of $word"))
                 }
+                logger.info("Retrieved ${fakeDefinitions.size} word definitions")
 
                 call.respond(HttpStatusCode.OK, Json.encodeToString(fakeDefinitions))
             }
