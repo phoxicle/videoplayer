@@ -6,7 +6,7 @@
       <track id="subtitles" src="/MIB2-subtitles-pt-BR.vtt" kind="subtitles" srclang="en" label="English" default />
     </video>
     <div id="definition" v-if="hoveredWord">
-      <strong>Definition: {{ hoveredWord }}</strong>: {{ definition }}
+      <strong>{{ hoveredWord }}</strong>: {{ definition }}
     </div>
   </div>
 </template>
@@ -14,11 +14,15 @@
 <script>
 import { openDB } from 'idb';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+console.log(`API Base URL: ${apiBaseUrl}`);
+
 export default {
   data() {
     return {
       hoveredWord: null,
       definition: null,
+      requestedTimeRanges: new Set()
     };
   },
   async mounted() {
@@ -34,19 +38,32 @@ export default {
       const startTime = currentTime;
       const endTime = currentTime + 5;
 
-      const response = await fetch(`/getWordDefinitions?startTime=${startTime}&endTime=${endTime}`);
+      const rangeKey = `${startTime}-${endTime}`;
+      if (this.requestedTimeRanges.has(rangeKey)) {
+        console.log(`Skipping API request for range: ${rangeKey}`);
+        return;
+      }
+
+      const url = `${apiBaseUrl}/getWordDefinitions?startTime=${startTime}&endTime=${endTime}`;
+      console.log(`Fetching URL: ${url}`);
+      const response = await fetch(url);
       const words = await response.json();
 
       const tx = db.transaction('definitions', 'readwrite');
       const store = tx.objectStore('definitions');
       for (const word of words) {
+        console.log("Adding word:", word)
         store.put(word);
       }
+
+      this.requestedTimeRanges.add(rangeKey);
+
       await tx.done;
     }, 5000);
 
     const track = document.getElementById('subtitles');
     track.addEventListener('cuechange', async (event) => {
+      console.log("cuechange event triggered");
       const activeCues = event.target.track.activeCues;
       if (activeCues.length > 0) {
         const text = activeCues[0].text;
