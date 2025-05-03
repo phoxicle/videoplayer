@@ -25,7 +25,6 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -60,30 +59,31 @@ button:focus-visible {
 
 #app {
   max-width: 1280px;
-  margin: 0 auto;
+  margin: 50px auto 0;
   padding: 2rem;
   text-align: center;
 }
 
 #definition {
-    margin-top: 20px;
-    font-size: 16px;
-    color: #333;
-  }
+  margin-top: 20px;
+  font-size: 16px;
+  color: #9ec2e6;
+}
 
-  .subtitle-word {
-    cursor: pointer;
-    display: inline-block;
-    margin: 0 2px;
-  }
+.subtitle-word {
+  cursor: pointer;
+  display: inline-block;
+  padding: 5px;
+}
 
-  .subtitle-word:hover {
-    text-decoration: underline;
-  }
+.subtitle-word:hover {
+  text-decoration: underline;
+  background: #043959;
+}
 
-  video::cue {
-    opacity: 0;
-  }
+video::cue {
+  opacity: 0;
+}
 
 @media (prefers-color-scheme: light) {
   :root {
