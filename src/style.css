@@ -65,6 +65,26 @@ button:focus-visible {
   text-align: center;
 }
 
+#definition {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #333;
+  }
+
+  .subtitle-word {
+    cursor: pointer;
+    display: inline-block;
+    margin: 0 2px;
+  }
+
+  .subtitle-word:hover {
+    text-decoration: underline;
+  }
+
+  video::cue {
+    opacity: 0;
+  }
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

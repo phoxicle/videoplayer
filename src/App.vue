@@ -5,6 +5,7 @@
       <source src="/MIB2.mp4" type="video/mp4" />
       <track id="subtitles" src="/MIB2-subtitles-pt-BR.vtt" kind="subtitles" srclang="en" label="English" default />
     </video>
+    <div id="custom-subtitles"></div>
     <div id="definition" v-if="hoveredWord">
       <strong>{{ hoveredWord }}</strong>: {{ definition }}
     </div>
@@ -33,6 +34,8 @@ export default {
     });
 
     const video = document.getElementById('video');
+    const customSubtitles = document.getElementById('custom-subtitles');
+
     setInterval(async () => {
       const currentTime = Math.floor(video.currentTime);
       const startTime = currentTime;
@@ -66,29 +69,34 @@ export default {
       console.log("cuechange event triggered");
       const activeCues = event.target.track.activeCues;
       if (activeCues.length > 0) {
+        // TODO improve tokenization, reuse from server -->
         const text = activeCues[0].text;
         const words = text.split(' ');
 
+        customSubtitles.innerHTML = ''; // Clear previous subtitles
         for (const word of words) {
-          const tx = db.transaction('definitions', 'readonly');
-          const store = tx.objectStore('definitions');
-          const definition = await store.get(word);
-          if (definition) {
-            this.hoveredWord = word;
-            this.definition = definition.definition;
-            break;
-          }
+          const span = document.createElement('span');
+          span.textContent = word;
+          span.className = 'subtitle-word';
+          span.addEventListener('mouseover', async () => {
+            console.log("Word hovered: ", word);
+            const tx = db.transaction('definitions', 'readonly');
+            const store = tx.objectStore('definitions');
+            const definition = await store.get(word);
+            if (definition) {
+              this.hoveredWord = word;
+              this.definition = definition.definition;
+            }
+          });
+          span.addEventListener('mouseout', () => {
+            this.hoveredWord = null;
+            this.definition = null;
+          });
+          customSubtitles.appendChild(span);
+          customSubtitles.appendChild(document.createTextNode(' ')); // Add space between words
         }
       }
     });
   },
 };
 </script>
-
-<style>
-#definition {
-  margin-top: 20px;
-  font-size: 16px;
-  color: #333;
-}
-</style>
